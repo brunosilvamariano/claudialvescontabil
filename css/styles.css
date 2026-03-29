@@ -1133,6 +1133,11 @@ input, button, textarea, select {
   border-color: var(--border-default);
   color: var(--text-muted);
   font-size: var(--text-sm);
+  margin-bottom: 8px;
+}
+
+#comparador-regimes .input-group-top {
+  margin-top: 8px;
 }
 
 /* ── Labels dos campos ── */
