@@ -32,8 +32,91 @@ class AmiltonAssistant {
     }
 
     init() {
+        this.upgradeFabIcon();
         this.attachEventListeners();
         this.showInitialMessage();
+    }
+
+    /**
+     * Monta o novo layout do botão flutuante:
+     * [bolha de boas-vindas] + [avatar circular]
+     * 
+     * Para usar foto real: defina this.avatarSrc com a URL da imagem.
+     * Ex.: this.avatarSrc = '/images/equipe/claudia.jpg';
+     * Se vazio, exibe as iniciais "CA" estilizadas.
+     */
+    upgradeFabIcon() {
+        if (!this.floatingBtn) return;
+
+        // ── Opcional: URL da foto da consultora/equipe ──
+        // Descomente e ajuste o caminho para usar uma foto real:
+        // this.avatarSrc = '/images/equipe/consultora.jpg';
+        this.avatarSrc = '/assets/img/avatar.jpg';  // deixe vazio para usar as iniciais
+
+        // Cria o wrapper externo (bolha + avatar)
+        const wrapper = document.createElement('div');
+        wrapper.className = 'floating-btn-wrapper';
+
+        // ── Bolha de boas-vindas ──
+        const bubble = document.createElement('div');
+        bubble.className = 'fab-bubble';
+        bubble.setAttribute('role', 'status');
+        bubble.setAttribute('aria-live', 'polite');
+        bubble.innerHTML = `
+            <span class="fab-bubble-name">ClaudiAlves</span>
+            <span class="fab-bubble-text">Olá! Posso te ajudar? 😊</span>
+            <button class="fab-bubble-close" aria-label="Fechar mensagem" title="Fechar">✕</button>
+        `;
+
+        // ── Conteúdo do avatar ──
+        this.floatingBtn.innerHTML = '';
+
+        if (this.avatarSrc) {
+            const img = document.createElement('img');
+            img.className = 'fab-avatar';
+            img.src       = this.avatarSrc;
+            img.alt       = 'Consultora ClaudiAlves';
+            img.draggable = false;
+            this.floatingBtn.appendChild(img);
+        } else {
+            const fallback = document.createElement('div');
+            fallback.className = 'fab-avatar-fallback';
+            fallback.innerHTML = `
+                <span class="fab-initials"></span>
+                <span class="fab-role"></span>
+            `;
+            this.floatingBtn.appendChild(fallback);
+        }
+
+        // Bolinha "online"
+        const dot = document.createElement('span');
+        dot.className = 'bot-online-dot';
+        dot.setAttribute('aria-label', 'Online agora');
+        this.floatingBtn.appendChild(dot);
+
+        // Insere wrapper no lugar certo (antes do floating-btn no DOM)
+        this.floatingBtn.parentNode.insertBefore(wrapper, this.floatingBtn);
+        wrapper.appendChild(bubble);
+        wrapper.appendChild(this.floatingBtn);
+
+        // ── Fechar bolha ──
+        const closeBtn = bubble.querySelector('.fab-bubble-close');
+        closeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            bubble.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+            bubble.style.opacity    = '0';
+            bubble.style.transform  = 'translateX(12px) scale(0.9)';
+            setTimeout(() => bubble.remove(), 260);
+        });
+
+        // ── Quando o chat abrir, esconde bolha ──
+        this.floatingBtn.addEventListener('click', () => {
+            if (bubble.parentNode) {
+                bubble.style.transition = 'opacity 0.2s ease';
+                bubble.style.opacity    = '0';
+                setTimeout(() => bubble.remove(), 200);
+            }
+        });
     }
 
     attachEventListeners() {

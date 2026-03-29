@@ -2366,10 +2366,21 @@ input, button, textarea, select {
    18. BOTÃO VOLTAR AO TOPO
    ══════════════════════════════════════════════════════════════ */
 
-.btn-scroll-top {
+/* ── Grupo fixo que alinha os dois botões flutuantes ── */
+.floating-buttons-group {
   position: fixed;
-  bottom: clamp(80px, 12vh, 100px);
-  right: clamp(1rem, 2vw, 2.35rem);
+  bottom: 30px;
+  right: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  z-index: var(--z-overlay);
+}
+
+/* ── Botão Scroll Top — dentro do grupo, sem posicionamento fixo próprio ── */
+.btn-scroll-top {
+  position: relative;
   width: 44px;
   height: 44px;
   background: var(--n-0);
@@ -2382,26 +2393,55 @@ input, button, textarea, select {
   cursor: pointer;
   opacity: 0;
   visibility: hidden;
-  transform: translateY(12px);
+  transform: translateY(10px) scale(0.9);
   transition:
     opacity var(--transition-base),
     visibility var(--transition-base),
     transform var(--transition-base),
-    background var(--transition-fast);
-  z-index: var(--z-overlay);
+    background var(--transition-fast),
+    box-shadow var(--transition-fast);
   font-size: 1rem;
   box-shadow: var(--shadow-sm);
+  pointer-events: none;
 }
 .btn-scroll-top.show {
   opacity: 1;
   visibility: visible;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
 }
 .btn-scroll-top:hover {
   background: var(--p-700);
   border-color: var(--p-600);
   color: #fff;
-  transform: translateY(-2px);
+  transform: translateY(-2px) scale(1);
+  box-shadow: var(--shadow-md);
+}
+
+@media (max-width: 768px) {
+  .floating-buttons-group {
+    bottom: 20px;
+    right: 20px;
+    gap: 8px;
+  }
+  .btn-scroll-top {
+    width: 40px;
+    height: 40px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 425px) {
+  .floating-buttons-group {
+    bottom: 16px;
+    right: 16px;
+    gap: 7px;
+  }
+  .btn-scroll-top {
+    width: 38px;
+    height: 38px;
+    font-size: 0.85rem;
+  }
 }
 
 

@@ -290,7 +290,7 @@
              rel="noopener noreferrer"
              aria-label="Falar com um especialista pelo WhatsApp">
             <i class="bi bi-whatsapp" aria-hidden="true"></i>
-            FALE COM UM ESPECIALISTA
+            AGENDAMENTO ONLINE EM BREVE
           </a>
         </div>
 
@@ -1465,28 +1465,32 @@
 
   </footer>
 
-  <!-- 
-       BOTÃO SCROLL TOP
-  -->
-  <button id="btnScrollTop"
-          class="btn-scroll-top"
-          type="button"
-          aria-label="Voltar para o topo da página"
-          title="Voltar ao topo">
-    <i class="bi bi-arrow-up" aria-hidden="true"></i>
-  </button>
+  <!-- Grupo de botões flutuantes (scroll-top + assistente) -->
+  <div class="floating-buttons-group" aria-label="Ações rápidas">
 
-  <!-- Botão Flutuante -->
-    <button class="floating-btn" id="botFloatingButton" aria-label="Abrir chat com assistente">
-        <i class="bi bi-chat-dots"></i>
+    <!-- Botão Scroll Top -->
+    <button id="btnScrollTop"
+            class="btn-scroll-top"
+            type="button"
+            aria-label="Voltar para o topo da página"
+            title="Voltar ao topo">
+      <i class="bi bi-arrow-up" aria-hidden="true"></i>
     </button>
+
+    <!-- Botão do Assistente Virtual -->
+    <button class="floating-btn" id="botFloatingButton" aria-label="Abrir chat com assistente virtual">
+      <!-- O conteúdo interno (ícone SVG, bolinha online e tooltip)
+           é injetado automaticamente pelo assistente.js -->
+    </button>
+
+  </div>
   <!-- Modal do Chat -->
   <div class="chat-modal" id="botChatContainer">
         <!-- Header do Chat -->
         <div class="chat-header">
             <div class="chat-header-content">
                 <div class="chat-avatar">
-                    <i class="bi bi-robot"></i>
+                     <img src="assets/img/avatar.jpg" alt="ClaudiAlves" style="width:100%;height:100%;object-fit:contain;padding:1px; border-radius: 50px;">
                 </div>
                 <div class="chat-info">
                     <h5 class="chat-title">Assistente ClaudiAlves</h5>
