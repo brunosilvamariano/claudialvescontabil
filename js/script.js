@@ -28,34 +28,7 @@ document.addEventListener('DOMContentLoaded', function () {
     btnTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
   }
 
-  /* ── Contadores animados ── */
-  const counters = document.querySelectorAll('[data-target]');
-
-  const animateCounter = (el) => {
-    const target = +el.getAttribute('data-target');
-    const prefix = el.getAttribute('data-prefix') || '';
-    const suffix = el.getAttribute('data-suffix') || '';
-    const duration = 1800;
-    const step = target / (duration / 16);
-    let current = 0;
-
-    const timer = setInterval(() => {
-      current = Math.min(current + step, target);
-      el.textContent = prefix + Math.floor(current) + suffix;
-
-      if (current >= target) clearInterval(timer);
-    }, 16);
-  };
-
-  const counterObserver = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (e.isIntersecting) { animateCounter(e.target); counterObserver.unobserve(e.target); }
-    });
-  }, { threshold: 0.4 });
-
-  counters.forEach(c => counterObserver.observe(c));
-
-  /* ── Smooth scroll ── */
+   /* ── Smooth scroll ── */
 
   // Lógica de Scroll Spy (Destaque do Menu Ativo)
   window.addEventListener('scroll', () => {
@@ -93,32 +66,47 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
 
+  /* ── Contadores animados ── */
+  const counters = document.querySelectorAll('[data-target]');
+
+  const animateCounter = (el) => {
+    const target = +el.getAttribute('data-target');
+    const prefix = el.getAttribute('data-prefix') || '';
+    const suffix = el.getAttribute('data-suffix') || '';
+    const duration = 1800;
+    const step = target / (duration / 16);
+    let current = 0;
+
+    const timer = setInterval(() => {
+      current = Math.min(current + step, target);
+      el.textContent = prefix + Math.floor(current) + suffix;
+
+      if (current >= target) clearInterval(timer);
+    }, 16);
+  };
+
+  const counterObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { animateCounter(e.target); counterObserver.unobserve(e.target); }
+    });
+  }, { threshold: 0.4 });
+
+  counters.forEach(c => counterObserver.observe(c));
 
   /* ── Active nav link ── */
   const sections = document.querySelectorAll('section[id]');
   const navLinks = document.querySelectorAll('.nav-link');
-
-  function updateActiveLink() {
-    const navH      = getNavHeight();
-    // Ponto de referência: logo abaixo da navbar + folga
-    const threshold = window.scrollY + navH + SCROLL_OFFSET + 1;
-
-    let activeSection = null;
+  window.addEventListener('scroll', () => {
+    const scrollY = window.scrollY + 120;
     sections.forEach(sec => {
-      if (threshold >= getAbsoluteTop(sec)) activeSection = sec;
-    });
-
-    navLinks.forEach(l => {
-      l.classList.remove('active');
-      if (activeSection && l.getAttribute('href') === '#' + activeSection.id) {
-        l.classList.add('active');
+      if (scrollY >= sec.offsetTop && scrollY < sec.offsetTop + sec.offsetHeight) {
+        navLinks.forEach(l => {
+          l.classList.remove('active');
+          if (l.getAttribute('href') === '#' + sec.id) l.classList.add('active');
+        });
       }
     });
-  }
-
-  window.addEventListener('scroll', updateActiveLink, { passive: true });
-  // Marca o link correto caso a página abra com hash na URL
-  updateActiveLink();
+  }, { passive: true });
 
 
   /* ═══════════════════════════════════════════════════════════════
@@ -304,62 +292,72 @@ document.addEventListener('DOMContentLoaded', function () {
           <div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">
             <span>${r.name}</span>
             ${isBest ? `<span class="badge" style="background:var(--p-600)">MELHOR</span>` : ''}
-            ${!r.eligible ? `<span class="badge" style="background:rgba(248,113,113,0.1);color:var(--r-500)">NÃO ELEGÍVEL</span>` : ''}
+            ${!r.eligible ? `<span class="badge" style="background:rgba(248,113,113,.15);color:var(--r-400)">INELEGÍVEL</span>` : ''}
           </div>
+          ${r.eligible ? `<div class="tax-bar-wrap"><div class="tax-bar-fill" style="width:${barPct}%;background:${barColor}"></div></div>` : ''}
         </td>
-        <td>
-          <div class="tax-bar-wrap">
-            <div class="tax-bar-fill" style="width:${barPct}%;background:${barColor}"></div>
-          </div>
-        </td>
-        <td class="text-end fw-bold" style="color:${isBest ? 'var(--p-700)' : 'inherit'}">
-          ${r.eligible ? formatCurrency(r.tax) : '—'}
-        </td>
-      `;
+        <td class="text-end text-secondary" style="white-space:nowrap">${r.eligible ? (r.rate*100).toFixed(2)+'%' : '—'}</td>
+        <td class="text-end fw-bold${isBest ? ' text-success' : ''}" style="white-space:nowrap">${r.eligible ? 'R$ '+fmt(r.tax) : '—'}</td>`;
       tableBody.appendChild(tr);
     });
   }
 
   function renderHeader(best) {
     if (bestName) bestName.textContent = best.name;
-    if (bestReason) {
-      bestReason.textContent = best.id === 'simples' ? 'Ideal para empresas com faturamento até R$ 4,8M e carga tributária simplificada.' :
-                               best.id === 'presumido' ? 'Indicado quando a margem de lucro real é superior à presunção legal.' :
-                               'Recomendado para empresas com margens de lucro reduzidas ou altos custos operacionais.';
-    }
+    if (!bestReason) return;
+    const reasons = {
+      simples: 'Regime simplificado com uma guia única (DAS). Menor burocracia e carga para o seu perfil.',
+      presumido: 'Para o seu faturamento e atividade, a presunção de lucro resulta em carga menor.',
+      real: 'Com a margem informada, tributar o lucro efetivo gera economia real — especialmente com despesas dedutíveis.',
+    };
+    bestReason.textContent = reasons[best.id] || '';
   }
 
   function renderSavings(eligible) {
     if (eligible.length < 2) {
-      if (savingsText) savingsText.textContent = 'Este é o único regime disponível para seu porte.';
-      if (savingsYearly) savingsYearly.textContent = 'Consulte um especialista para otimização.';
+      if (savingsText) savingsText.innerHTML = 'Apenas um regime elegível para o seu perfil.';
+      if (savingsYearly) savingsYearly.textContent = '';
       return;
     }
-    const best = eligible[0];
-    const worst = eligible[eligible.length - 1];
-    const diff = worst.tax - best.tax;
-    if (savingsText) savingsText.textContent = `Economia mensal de até ${formatCurrency(diff)}`;
-    if (savingsYearly) savingsYearly.textContent = `Totalizando ${formatCurrency(diff * 12)} por ano.`;
+    const diff   = eligible[1].tax - eligible[0].tax;
+    const yearly = diff * 12;
+    if (savingsText) savingsText.innerHTML = `No regime ideal, você pode economizar até <strong style="color:var(--g-400)">R$ ${fmt(diff)}</strong>/mês.`;
+    if (savingsYearly) savingsYearly.textContent = `Equivalente a R$ ${fmt(yearly)} ao ano — capital que pode ser reinvestido no negócio.`;
   }
 
   function renderEligNotes(sorted) {
     if (!eligNotes) return;
-    eligNotes.innerHTML = '';
-    sorted.forEach(r => {
-      const li = document.createElement('li');
-      li.innerHTML = `<strong>${r.name}:</strong> ${r.note}`;
-      eligNotes.appendChild(li);
-    });
+    const ineligible = sorted.filter(r => !r.eligible);
+    if (!ineligible.length) { eligNotes.style.display = 'none'; eligNotes.innerHTML = ''; return; }
+    eligNotes.style.display = 'block';
+    eligNotes.innerHTML = ineligible.map(r => `
+      <div style="display:flex;align-items:flex-start;gap:.4rem;font-size:var(--text-xs);color:var(--a-400);margin-bottom:.35rem">
+        <i class="bi bi-exclamation-circle-fill" style="flex-shrink:0;margin-top:2px"></i>
+        <span><strong>${r.name}</strong>: ${r.note}</span>
+      </div>`).join('');
   }
 
   function updateWA(best, revenue, activity) {
     if (!whatsappCta) return;
-    const text = `Olá! Fiz a simulação no site e o resultado foi ${best.name}. Meu faturamento mensal é de ${formatCurrency(revenue)} no setor de ${activity}. Gostaria de uma análise detalhada.`;
-    whatsappCta.href = `https://wa.me/5547991597258?text=${encodeURIComponent(text)}`;
+    const acts = { comercio:'Comércio', industria:'Indústria', servicos_simples:'Serviços (Anexo III)', servicos_fator_r:'Serviços (Fator R)', servicos_alta:'Serviços (Anexo V)' };
+    const msg = encodeURIComponent(
+      `Olá! Fiz a simulação no site da Amilton Contabilidade.\n\n` +
+      `📊 Faturamento mensal: R$ ${fmt(revenue)}\n` +
+      `🏢 Atividade: ${acts[activity] || activity}\n` +
+      `✅ Regime recomendado: ${best.name}\n` +
+      `💰 Imposto estimado: R$ ${fmt(best.tax)}/mês\n\n` +
+      `Gostaria de validar esses dados e fazer o planejamento tributário.`
+    );
+    whatsappCta.href = `https://wa.me/5547991597258?text=${msg}`;
   }
 
   /* ── Helpers ── */
-  function parseRevenue(str) { return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0; }
-  function formatCurrency(val) { return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+  function parseRevenue(val) {
+    return parseFloat(String(val).replace(/\./g,'').replace(',','.').replace(/[^\d.]/g,''));
+  }
+
+  function fmt(value) {
+    return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
 
 });
